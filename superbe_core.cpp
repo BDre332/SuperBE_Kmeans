@@ -1,5 +1,8 @@
 #include "superbe_core.h"
+#include "kmeans.h"
 #include <fstream>
+
+vector<vector<double> > kmeans_clusters_background;
 
 void superbe_engine::set_init(int i_N, int i_R, double i_DIS, int i_numMin, int i_phi, int i_post) {
     N = i_N;
@@ -20,8 +23,24 @@ Mat superbe_engine::filter_equalise() {
     return filt_img;
 }
 
-void superbe_engine::gettest(){
+void superbe_engine::kmeans_clustering(){
+ 	KMeans kmeans;
+	
+		cout << "KMeans clusters for BE has Begun\n";
+	kmeans_clusters_background.clear();
+	kmeans_clusters_background.resize(numSegments);
+	
 
+	for(int i=0; i<numSegments; i++) {
+ 	cout<< "entering for loop \n";
+		
+		kmeans_clusters_background[i] = kmeans.K_means_run(segment_pixvals[i]);
+		
+		
+	}
+
+	cout << "KMeans clusters for BE has finished\n";
+	
 	
 }
 
@@ -41,10 +60,13 @@ void superbe_engine::process_vals(Mat filt_img) {
 	    
         }
     }
+
+   // this is only to test 
+
  
 
     //Calculate average and covariance matrix for each superpixel and store
-    Mat vec3bplaceholder;
+   /* Mat vec3bplaceholder;
     for(int i=0; i<numSegments; i++) {
         if (segment_pixvals[i].size() != 0) {
             vec3bplaceholder = castVec3btoMat(segment_pixvals[i]);
@@ -59,7 +81,7 @@ void superbe_engine::process_vals(Mat filt_img) {
                 covars.at(i-1).copyTo(covars.at(i));
             }
         }
-    }
+    }*/
 }
 
 void superbe_engine::initialise_background(String filename) {
@@ -120,27 +142,9 @@ void superbe_engine::initialise_background(Mat image_in) {
 
     process_vals(filt_img); //Calculate means and covariance matrices
    // Mat filt_img = filter_equalise();
-	std::ofstream myfile;
-   	myfile.open ("/home/bdre332/BraedenMaster/SuperBE-master/FilesWrite/example.txt");
+// TODO function here
+    kmeans_clustering();
 
-	for(int i=0; i<height; i++) {
-            int* pi = segments.ptr<int>(i);
-            for(int j=0; j<width; j++) {
-       		Vec3b vals = filt_img.at<Vec3b>(i, j);
-		uchar blue = vals.val[0];
-		uchar green = vals.val[1];
-		uchar red = vals.val[2];
-		
-	    	myfile  << static_cast<double>(blue) <<".0 " << static_cast<double>(green) << ".0 " << static_cast<double>(red) << ".0\n" ;
-		
-    	
-    		
-    		
-
-        }
-
-    }
-    myfile.close();
     segment_pixels.clear();
     segment_pixels.resize(numSegments); //An array of groups, each element is a vector of pixel positions
     //Build arrays of pixel positions and pixel values sorted by groups
@@ -185,6 +189,9 @@ Mat superbe_engine::process_frame(String filename, int waitTime) {
 }
 
 Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
+	
+	cout << " going into process frame\n "; 
+    KMeans kmeans;
     image = image_in;
     Mat filt_img = filter_equalise();
     image.copyTo(segmented); //Help with visualising results
@@ -192,6 +199,13 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
     process_vals(filt_img);
 
     Mat mask(height, width, CV_8UC1, Scalar(0)); //Initialise to zeros
+    vector<vector<double> > kmeans_clusters_frame;
+    vector<double> test ;
+    test.resize(3);
+ 
+	kmeans_clusters_frame.clear();
+    kmeans_clusters_frame.resize(numSegments);
+    double difference;
 
     int euc_dist;
     double dissimilarity;
@@ -200,7 +214,24 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
         int count = 0;
         int index = 0;
 
-        while(count < numMin && index < N) {
+		kmeans_clusters_frame[i].resize(3);
+		kmeans_clusters_frame[i] = kmeans.K_means_run(segment_pixvals[i]);
+	 
+
+		if ( !kmeans_clusters_background.empty()){
+			//cout << "For superpixel number: " << numSegments << "\n";
+			for (int j=0; j < 3 ; j++){
+				//	cout <<"Frame Value Clusters: "<< kmeans_clusters_frame[i][j]<< "\n";
+				difference = kmeans_clusters_frame[i][j] - kmeans_clusters_background[i][j];
+				cout <<"This is the difference in the clusters background and frame: "<< difference<< "\n";
+    		}
+		}
+	//for (int j = 0 ; j<3; j++){
+	//	difference = kmeans_clusters_frame[i][j] - kmeans_clusters_background[i][j];
+	//	cout << " this is the difference: " << difference << "\n";
+	//}
+
+    /*    while(count < numMin && index < N) {
             //Calculate euclidean distance between averages
             euc_dist = (int)round(norm(avgs.at(i), bgavgs.at(i).at(index)));
 
@@ -225,16 +256,16 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
                 count++;
             }
             index++;
-        }
+        }*/
 
         //2) Classify superpixel and update model
-        if(count >= numMin) {
+       /* if(count >= numMin) {
             //3) Update current pixel model
             randint = rand() % (N-1);
             avgs.at(i).copyTo(bgavgs.at(i).at(randint));
             covars.at(i).copyTo(bgcovars.at(i).at(randint));
 
-            //4) Update neighbouring superpixel model(s)
+          /*  //4) Update neighbouring superpixel model(s)
             randint = rand() % (phi-1);
             if (randint == 0) {
                 if (neighbours.at(i).size() > 1) { //Can't rand % 0
@@ -247,9 +278,9 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
         } else {
             for(int j=0; j<segment_pixels.at(i).size(); j++) {
                 mask.at<uchar>(segment_pixels.at(i).at(j)) = 255;
-            }
+            }*/
         }
-    }
+    
 
     Mat masked_img(height, width, CV_8UC3, Scalar(0,0,0)); //Initialise to zeros
     Mat closed, opened;

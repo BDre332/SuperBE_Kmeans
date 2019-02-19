@@ -9,13 +9,15 @@
 #include "helper.h"
 
 
+
+
 #define EPSILON 1e-100
 
 using namespace cv;
 using namespace std;
 using namespace cv::ximgproc;
 
-class superbe_engine {
+class superbe_engine {friend class KMeans;
 private:
     int N, R, numMin, phi, post;
     double DIS;
@@ -25,7 +27,10 @@ private:
 
     Mat image, segmented;
     Mat segments, edges;
-
+	
+   
+    vector<vector< double> > kmeans_clusters_background;
+    vector<vector<Vec3b> > k_means_3dVector;
     vector<vector<Point> > segment_pixels;
     vector<vector<Vec3b> > segment_pixvals;
     vector<vector<int> > neighbours;
@@ -45,10 +50,11 @@ private:
     void process_vals(Mat);
 
 public:
+  
     void set_init(int, int, double, int, int, int);
     void initialise_background(String);
     void initialise_background(Mat);
     Mat process_frame(String, int);
     Mat process_frame(Mat, int);
-    void gettest();
+    void kmeans_clustering();
 };

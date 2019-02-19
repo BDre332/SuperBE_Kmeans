@@ -1,5 +1,6 @@
 #include "kmeans.h"
-#include "global.h"
+
+
 
 
 int id_point, id_cluster;
@@ -9,22 +10,41 @@ string name;
 
 
 vector<double> central_values;
-vector<Point> points;
+vector<Point_K> points;
 
 int K; // number of clusters
 int total_values, total_points, max_iterations;
-global vector<Cluster> clusters;
+vector<Cluster_K> clusters;
+int numTimes;
+
 
 // return ID of nearest center (uses euclidean distance)
 
+//Custom Class 3DoubleVect
+/*double DoubleVect::getCluster1(){
+	return cluster1;
+}
+double DoubleVect::getCluster2(){
+	return cluster2;
+}
+double DoubleVect::getCluster3(){
+	return cluster3;
+}
+void DoubleVect::setCluster1(double clusterValue){
+	cluster1 = clusterValue;
+}
+void DoubleVect::setCluster1(double clusterValue){
+	cluster2 = clusterValue;
+}
+void DoubleVect::setCluster1(double clusterValue){
+	cluster3 = clusterValue;
+}*/
 
-
-
-void Cluster::addPoint(Point point)
+void Cluster_K::addPoint(Point_K point)
 	{
 		points.push_back(point);
 	}
-bool Cluster::removePoint(int id_point)
+bool Cluster_K::removePoint(int id_point)
 	{
 		int total_points = points.size();
 
@@ -38,27 +58,27 @@ bool Cluster::removePoint(int id_point)
 		}
 		return false;
 	}
-double Cluster::getCentralValue(int index)
+double Cluster_K::getCentralValue(int index)
 	{
 		return central_values[index];
 	}
 
-void Cluster::setCentralValue(int index, double value)
+void Cluster_K::setCentralValue(int index, double value)
 	{
 		central_values[index] = value;
 	}
 
-Point Cluster::getPoint(int index)
+Point_K Cluster_K::getPoint(int index)
 	{
 		return points[index];
 	}
 
-int Cluster::getTotalPoints()
+int Cluster_K::getTotalPoints()
 	{
 		return points.size();
 	}
 
-int Cluster::getID_cluster()
+int Cluster_K::getID_cluster()
 	{
 		return id_cluster;
 	}
@@ -69,40 +89,40 @@ int Cluster::getID_cluster()
 
 
 
-int Point::getID()
+int Point_K::getID()
 	{
 		return id_point;
 	}
 
-void Point::setCluster(int id_cluster1)
+void Point_K::setCluster(int id_cluster1)
 	{
 		id_cluster = id_cluster1;
 	}
-int Point::getCluster()
+int Point_K::getCluster()
 	{
 		return id_cluster;
 	}
 
-double Point::getValue(int index)
+double Point_K::getValue(int index)
 	{
 		return values[index];
 	}
 
-int Point::getTotalValues()
+int Point_K::getTotalValues()
 	{
 		return total_values;
 	}
 
-void Point::addValue(double value)
+void Point_K::addValue(double value)
 	{
 		values.push_back(value);
 	}
 
-string Point::getName()
+string Point_K::getName()
 	{
 		return name;
 	}
-int KMeans::getIDNearestCenter(Point point)
+int KMeans::getIDNearestCenter(Point_K point)
 	{
 		double sum = 0.0, min_dist;
 		int id_cluster_center = 0;
@@ -140,10 +160,82 @@ int KMeans::getIDNearestCenter(Point point)
 
 
 
-void KMeans::run(vector<Point> & points)
+vector<double> KMeans::K_means_run(vector<Vec3b> SuperPixelValues){
+
+// note TODO make sure that this goes into the run method. 
+	vector<Vec3b> SuperPixelValues1 ;
+	SuperPixelValues1 = SuperPixelValues;
+	int total_points, total_values, K, max_iterations, has_name;
+	total_points = SuperPixelValues1.size();				
+	total_values = 3;
+	K = 3; 								// how many centroids
+	max_iterations = 10000;
+	has_name = 0;
+	//int SuperPixelID1 = SuperPixelID
+	vector<Point_K> points;
+	string point_name;
+	vector<double> cluster_vals;	
+	cluster_vals.resize(total_values);
+	numTimes++;
+
+
+	//run through each superpixel set of pixels 
+	for(int i=0; i<total_points; i++) {
+        	vector<double> values;
+		values.resize(3);
+        	Vec3b vals = SuperPixelValues1[i];
+		//cout << "-------  Pixel Numnber:  " << i << "-------\n";
+		for( int j = 0; j < total_values; j++){
+			// run through each RGB value and append onto the vector values	
+
+			
+			//cout << "Pixel" << j << ": "  << static_cast<double>(vals.val[j]) << "\n";
+			values[j]=static_cast<double>(vals.val[j]);
+	
+			//	double rgbValue = static_cast<double>(vals.val[j]);
+			//	values.push_back(vals)
+			Point_K p(i, values);
+			points.push_back(p);
+		}
+		//cout << "-------------------------------------------------\n\n\n";
+	}
+				
+    	
+	
+
+
+
+	//cin >> total_points >> total_values >> K >> max_iterations >> has_name;
+
+	
+
+/*	for(int i = 0; i < total_points; i++)
 	{
-		if(K > total_points)
-			return;
+		vector<double> values;
+
+		for(int j = 0; j < total_values; j++)
+		{
+			double value;
+			cin >> value;
+			values.push_back(value);
+		}
+
+		if(has_name)
+		{
+			cin >> point_name;
+			Point p(i, values, point_name);
+			points.push_back(p);
+		}
+		else
+		{
+			Point p(i, values);
+			points.push_back(p);
+		}
+	}*/
+
+	
+		//if(K > total_points)
+		//	return;
 
 		vector<int> prohibited_indexes;
 
@@ -159,7 +251,7 @@ void KMeans::run(vector<Point> & points)
 				{
 					prohibited_indexes.push_back(index_point);
 					points[index_point].setCluster(i);
-					Cluster cluster(i, points[index_point]);
+					Cluster_K cluster(i, points[index_point]);
 					clusters.push_back(cluster);
 					break;
 				}
@@ -208,86 +300,65 @@ void KMeans::run(vector<Point> & points)
 
 			if(done == true || iter >= max_iterations)
 			{
-				cout << "Break in iteration " << iter << "\n\n";
+				//cout << "Break in iteration " << iter << "\n\n";
 				break;
 			}
 
 			iter++;
 		}
 
+		
+		cout << "Cluster values for point: " << numTimes << "\n";
 		// shows elements of clusters
+		//cluster_vals.resize(total_points);
+		
 		for(int i = 0; i < K; i++)
 		{
 			int total_points_cluster =  clusters[i].getTotalPoints();
 
-			cout << "Cluster " << clusters[i].getID_cluster() + 1 << endl;
+			//cout << "Cluster_K " << clusters[i].getID_cluster() + 1 << endl;
 			for(int j = 0; j < total_points_cluster; j++)
 			{
-				cout << "Point " << clusters[i].getPoint(j).getID() + 1 << ": ";
+				//cout << "Point_K " << clusters[i].getPoint(j).getID() + 1 << ": ";
 				for(int p = 0; p < total_values; p++)
-					cout << clusters[i].getPoint(j).getValue(p) << " ";
+					//cout << clusters[i].getPoint(j).getValue(p) << " ";
 
 				string point_name = clusters[i].getPoint(j).getName();
 
 				if(point_name != "")
 					cout << "- " << point_name;
 
-				cout << endl;
+				
 			}
 
-			cout << "Cluster values: ";
 
-			for(int j = 0; j < total_values; j++)
-				cout << clusters[i].getCentralValue(j) << " ";
-
-			cout << "\n\n";
+			
 		}
+		for(int j = 0; j < total_values; j++){
+			//cout << (clusters[0].getCentralValue(j))*1000 << " ";
+		}
+		//cout << "\n\n";
+
+			
+        			
+       	
+		for (int y =0; y < total_values; y++){
+	           	cluster_vals[y]= (clusters[0].getCentralValue(y)); // Set up the Cluster Values for sending to the SuperBE Algorithm
+			cout << "Cluster  "<< y <<": " << cluster_vals[y] << " -----------\n";
+	           }	
+		cout << "\n\n";
+		
+		return cluster_vals;
+		
+
 	}
+
+
 
 void kmeans_main(int argc, char *argv[], int total_points1, int total_values1, int K1, int max_iterations1, int has_name1)
 {
 
-	// note TODO make sure that this goes into the run method. 
-	srand (time(NULL));
-
-	int total_points, total_values, K, max_iterations, has_name;
-	total_points = total_points1;
-	total_values = total_values1;
-	K = K1;
-	max_iterations = max_iterations1;
-	has_name = has_name1;
-
-	//cin >> total_points >> total_values >> K >> max_iterations >> has_name;
-
-	vector<Point> points;
-	string point_name;
-
-	for(int i = 0; i < total_points; i++)
-	{
-		vector<double> values;
-
-		for(int j = 0; j < total_values; j++)
-		{
-			double value;
-			cin >> value;
-			values.push_back(value);
-		}
-
-		if(has_name)
-		{
-			cin >> point_name;
-			Point p(i, values, point_name);
-			points.push_back(p);
-		}
-		else
-		{
-			Point p(i, values);
-			points.push_back(p);
-		}
-	}
-
-	KMeans kmeans(K, total_points, total_values, max_iterations);
-	kmeans.run(points);
+	
 
 	
 }

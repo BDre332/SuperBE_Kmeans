@@ -26,11 +26,11 @@ int main(int argc, char** argv) {
         post = atoi(argv[7]);
     }
 
-    String categories[] = {"badWeather", "baseline"};// "cameraJitter", "dynamicBackground", "intermittentObjectMotion", "lowFramerate", "nightVideos", "PTZ", "shadow", "thermal", "turbulence"};
+    String categories[] = {"badWeather", "baseline", "cameraJitter", "dynamicBackground", "intermittentObjectMotion", "lowFramerate", "nightVideos", "PTZ", "shadow", "thermal", "turbulence"};
     vector<vector<String> > sequences;
     String badWeather[] = {"blizzard", "skating", "snowFall", "wetSnow"};
-   String baseline[] = {"highway", "office", "pedestrians", "PETS2006"};
-  /*  String cameraJitter[] = {"badminton", "boulevard", "sidewalk", "traffic"};
+    String baseline[] = {"highway", "office", "pedestrians", "PETS2006"};
+    String cameraJitter[] = {"badminton", "boulevard", "sidewalk", "traffic"};
     String dynamicBackground[] = {"boats", "canoe", "fall", "fountain01", "fountain02", "overpass"};
     String intermittentObjectMotion[] = {"abandonedBox", "parking", "sofa", "streetLight", "tramstop", "winterDriveway"};
     String lowFramerate[] = {"port_0_17fps", "tramCrossroad_1fps", "tunnelExit_0_35fps", "turnpike_0_5fps"};
@@ -38,10 +38,10 @@ int main(int argc, char** argv) {
     String PTZ[] = {"continuousPan", "intermittentPan", "twoPositionPTZCam", "zoomInZoomOut"};
     String shadow[] = {"backdoor", "bungalows", "busStation", "copyMachine", "cubicle", "peopleInShade"};
     String thermal[] = {"corridor", "diningRoom", "lakeSide", "library", "park"};
-    String turbulence[] = {"turbulence0", "turbulence1", "turbulence2", "turbulence3"};*/
+    String turbulence[] = {"turbulence0", "turbulence1", "turbulence2", "turbulence3"};
     sequences.push_back(vector<String> (badWeather, badWeather+sizeof(badWeather) / sizeof(badWeather[0])));
     sequences.push_back(vector<String> (baseline, baseline+sizeof(baseline) / sizeof(baseline[0])));
- /*   sequences.push_back(vector<String> (cameraJitter, cameraJitter+sizeof(cameraJitter) / sizeof(cameraJitter[0])));
+    sequences.push_back(vector<String> (cameraJitter, cameraJitter+sizeof(cameraJitter) / sizeof(cameraJitter[0])));
     sequences.push_back(vector<String> (dynamicBackground, dynamicBackground+sizeof(dynamicBackground) / sizeof(dynamicBackground[0])));
     sequences.push_back(vector<String> (intermittentObjectMotion, intermittentObjectMotion+sizeof(intermittentObjectMotion) / sizeof(intermittentObjectMotion[0])));
     sequences.push_back(vector<String> (lowFramerate, lowFramerate+sizeof(lowFramerate) / sizeof(lowFramerate[0])));
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     sequences.push_back(vector<String> (PTZ, PTZ+sizeof(PTZ) / sizeof(PTZ[0])));
     sequences.push_back(vector<String> (shadow, shadow+sizeof(shadow) / sizeof(shadow[0])));
     sequences.push_back(vector<String> (thermal, thermal+sizeof(thermal) / sizeof(thermal[0])));
-    sequences.push_back(vector<String> (turbulence, turbulence+sizeof(turbulence) / sizeof(turbulence[0])));*/
+    sequences.push_back(vector<String> (turbulence, turbulence+sizeof(turbulence) / sizeof(turbulence[0])));
 
     for (int cat=0; cat<sequences.size(); cat++) {
         String category = categories[cat];

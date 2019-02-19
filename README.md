@@ -1,56 +1,31 @@
-# K-Means Clustering Algorithm
-Implementation in C++ of the K-Means clustering algorithm.
+# SuperBE
+Superpixel-level Background Estimation Algorithm
 
-Examples of datasets are in datasets folder.
+This work is licensed under a Creative Commons [Attribution-Noncommercial-Sharealike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+![CC-Attribution-Noncommercial-Sharealike-License](http://creativecommons.org.nz/wp-content/uploads/2012/05/by-nc-sa1.png)
 
-References are in references folder.
+Known to compile on Ubuntu 14.04 and 16.04
 
-This link was very useful for me: http://mnemstudio.org/clustering-k-means-example-1.htm
+Dependencies:
+- OpenCV 3.1.0 including opencv_contrib (with corrected slic.cpp (https://github.com/opencv/opencv_contrib/pull/483))
+- CMake 2.8
 
-The implementation is in the file kmeans.cpp.
+Instructions:
+- Use SuperBE.cpp to write your test program, instantiating a superbe_engine object (described in superbe_core.cpp).
+- The second argument of superbe_engine.process_frame() can be set to 0 in order to visually show the results with the user pressing any key to progress, or -1 to not show anything.
+- Use check_segmentation (described in analysis.cpp) to test SuperBE output images against a ground truth.
 
-Each dataset is in format expected by the program.
+For test purposes with the CDW2014 dataset (http://wordpress-jodoin.dmi.usherb.ca/dataset2014/):
 
-Explanation of the format:
+```
+Usage: ./superbe [directory to dataset] [N] [R] [DIS] [numMin] [phi] [post] [ID]
 
-First line: A B C D E
+Example: ./superbe ../dataset2014/dataset/ 20 60 18.0 4 8 1 test_ID
+```
 
-"A" is the amount of data points.<br />
-"B" is the amount of attributes.<br />
-"C" is the amount of clusters.<br />
-"D" is the maximum iterations.<br />
-"E" indicates if contains a name for each data point. The value for "E" is 0 (not contains) or 1 (contains).<br />
-The next "A" lines contains "B" attributes and the data point name (if "E" variable is 1).<br />
+CSV result files for each test are stored in /cdwresults. By default, the storage of the output masks is commented out.
 
-Example of dataset:
-
-7 2 2 100 0<br />
-1.0 1.0<br />
-1.5 2.0<br />
-3.0 4.0<br />
-5.0 7.0<br />
-3.5 5.0<br />
-4.5 5.0<br />
-3.5 4.5<br />
-
-7 is the amount of data points.<br />
-2 is the amount of attributes.<br />
-2 is the amount of clusters.<br />
-100 is the maximum iterations.<br />
-0 indicates that not contains data point name.<br />
-The next 7 lines contains 2 attributes each.<br />
-
-Example that contains data point name (iris-data):
-
-150 4 3 100 1<br />
-5.1 3.5 1.4 0.2 Iris-setosa<br />
-4.9 3.0 1.4 0.2 Iris-setosa<br />
-4.7 3.2 1.3 0.2 Iris-setosa<br />
-4.6 3.1 1.5 0.2 Iris-setosa<br />
-(...)<br />
-
-The euclidean distance was used for to calculate the distance of each data point for the centroid of cluster.
-
-The algorithm stops by maximum number of iterations or if no data point exchange cluster.
-
-Doubts? mcastrosouza@live.com
+superbe_webcam allows you to build a working demonstration that uses your computer's camera. Modify CMakeLists.txt to compile superbe_webcam instead, and call (example parameter settings may need to be modified):
+```
+./superbe_webcam 20 20 8.0 2 16 1
+```
