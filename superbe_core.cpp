@@ -222,7 +222,7 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
     double dissimilarity;
     for (int i=0;i<numSegments;i++) {
         //1) Compare pixel to background model
-        int count = 0;
+ 	
         int index = 0;
 
 		kmeans_clusters_frame[i].resize(3);
@@ -230,13 +230,15 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
 		kmeans_clusters_frame[i] = kmeans.K_means_run(segment_pixvals[i]);
 	 
 
-		if ( !kmeans_clusters_background.empty()){
-		//	cout << "For superpixel number: " << i << "\n";
+		 
+	
+		
+	
 			for (int j=0; j < 3 ; j++){
 				//	cout <<"Frame Value Clusters: "<< kmeans_clusters_frame[i][j]<< "\n";
 				difference = kmeans_clusters_frame[i][j] - kmeans_clusters_background[i][j];
-				//cout <<"This boi different: "<< difference << "\n";
-				if ( difference > 0.2 || difference < -0.2){
+				//IF this difference is less than 0.2 or greater than 0.2 it is considerd similar enough and counts towards the background
+				if ( difference < 0.2 || difference > -0.2){
 					randint = rand() % (N-1);
 
 	   				//Update pixel model for Kmeans 
@@ -269,11 +271,12 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
             				}
  				}
     			}
-		}
+		
 
        
     
     }
+    cout << "Frame processed\n";
     Mat masked_img(height, width, CV_8UC3, Scalar(0,0,0)); //Initialise to zeros
     Mat closed, opened;
     if (post == 1) {
