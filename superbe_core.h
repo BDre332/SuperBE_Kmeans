@@ -40,6 +40,8 @@ private:
     //Background Model
     vector<vector<Mat> > bgavgs; //Easier later to just keep these two separate
     vector<vector<Mat> > bgcovars;
+    
+    vector<vector<vector< double> > > kmeans_clusters_background_model;
 
     Mat structOpen, structClose; //Structuring elements for morphological operations
 

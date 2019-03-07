@@ -32,7 +32,7 @@ void superbe_engine::kmeans_clustering(){
 	
 
 	for(int i=0; i<numSegments; i++) {
- 	cout<< "entering for loop \n";
+ 	//cout<< "entering for loop \n";
 		
 		kmeans_clusters_background[i] = kmeans.K_means_run(segment_pixvals[i]);
 		
@@ -66,7 +66,7 @@ void superbe_engine::process_vals(Mat filt_img) {
  
 
     //Calculate average and covariance matrix for each superpixel and store
-   /* Mat vec3bplaceholder;
+   Mat vec3bplaceholder;
     for(int i=0; i<numSegments; i++) {
         if (segment_pixvals[i].size() != 0) {
             vec3bplaceholder = castVec3btoMat(segment_pixvals[i]);
@@ -81,7 +81,7 @@ void superbe_engine::process_vals(Mat filt_img) {
                 covars.at(i-1).copyTo(covars.at(i));
             }
         }
-    }*/
+    }
 }
 
 void superbe_engine::initialise_background(String filename) {
@@ -156,24 +156,35 @@ void superbe_engine::initialise_background(Mat image_in) {
         }
     }
 
-    bgavgs.resize(numSegments); //Allocate space for background model
-    bgcovars.resize(numSegments);
 
-    for (int i=0; i<numSegments; i++) {
-        bgavgs.at(i).resize(N);
-        bgcovars.at(i).resize(N);
+
+   //Alloctate space for the background model	
+   // kmeans_clusters_background_model.clear();
+    kmeans_clusters_background_model.resize(numSegments);
+
+
+     for (int i=0; i<numSegments; i++) {
+     	kmeans_clusters_background_model[i].resize(N); // Number of historical background relatives
         for (int j=0; j<N; j++) {
+	  // Number of historical background relatives
             if (neighbours.at(i).size() != 0) {
+		kmeans_clusters_background_model[i][j].resize(3);
                 //Select a random neighbouring superpixel (including potentially, self)
                 randint = rand() % (neighbours.at(i).size());
-                avgs.at(neighbours.at(i)[randint]).copyTo(bgavgs.at(i).at(j));
-                covars.at(neighbours.at(i)[randint]).copyTo(bgcovars.at(i).at(j));
+		for (int k=0; k < 3; k++){
+			//cout << "The randint is: " << neighbours.at(i)[randint] << "\n";
+			kmeans_clusters_background_model[i][j][k] = kmeans_clusters_background[neighbours.at(i)[randint]][k]; 
+			//cout << "this is AFTER Background Model\n";
+            	}
             } else { //No neighbours found, just fill with self-values
-                avgs.at(i).copyTo(bgavgs.at(i).at(j));
-                covars.at(i).copyTo(bgcovars.at(i).at(j));
+		for (int k=0; k < 3; k++){
+                	kmeans_clusters_background_model[i][j][k] = kmeans_clusters_background[i][k];
+		}
             }
         }
     }
+
+ 
 
     //Compute morphological operation kernel sizes based on (average) superpixel size
     int openSize = (int)(sqrt(height * width / (double)numSegments) * 1.5);
@@ -190,7 +201,7 @@ Mat superbe_engine::process_frame(String filename, int waitTime) {
 
 Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
 	
-	cout << " going into process frame\n "; 
+	//cout << " going into process frame\n "; 
     KMeans kmeans;
     image = image_in;
     Mat filt_img = filter_equalise();
@@ -203,7 +214,7 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
     vector<double> test ;
     test.resize(3);
  
-	kmeans_clusters_frame.clear();
+    kmeans_clusters_frame.clear();
     kmeans_clusters_frame.resize(numSegments);
     double difference;
 
@@ -215,73 +226,54 @@ Mat superbe_engine::process_frame(Mat image_in, int waitTime) {
         int index = 0;
 
 		kmeans_clusters_frame[i].resize(3);
+		// run K-means on the current Frame 
 		kmeans_clusters_frame[i] = kmeans.K_means_run(segment_pixvals[i]);
 	 
 
 		if ( !kmeans_clusters_background.empty()){
-			//cout << "For superpixel number: " << numSegments << "\n";
+		//	cout << "For superpixel number: " << i << "\n";
 			for (int j=0; j < 3 ; j++){
 				//	cout <<"Frame Value Clusters: "<< kmeans_clusters_frame[i][j]<< "\n";
 				difference = kmeans_clusters_frame[i][j] - kmeans_clusters_background[i][j];
-				cout <<"This is the difference in the clusters background and frame: "<< difference<< "\n";
-    		}
+				//cout <<"This boi different: "<< difference << "\n";
+				if ( difference > 0.2 || difference < -0.2){
+					randint = rand() % (N-1);
+
+	   				//Update pixel model for Kmeans 
+	   				for (int k =0; k<3;k++){
+	   	  				kmeans_clusters_background_model[i][randint][k] = kmeans_clusters_background[i][k];
+	   				}
+  
+
+           				//4) Update neighbouring superpixel model(s)
+           				 randint = rand() % (phi-1);
+           				 if (randint == 0) {
+                				if (neighbours.at(i).size() > 1) { //Can't rand % 0
+                    					rand_neigh = neighbours.at(i).at(rand() % (neighbours.at(i).size()-1));
+                    					rand_bgmodel = rand() % (N-1);
+			
+		    				//updating a random Backgroundmodel of the random neighbouring superpixel with the values of the current.	
+ 							for (int k =0; k<3;k++){
+			   					 kmeans_clusters_background_model[rand_neigh][rand_bgmodel][k] = kmeans_clusters_background[i][k]  ;
+	   						}	    
+
+
+
+                    
+                				}
+            				}
+				}
+				else { 
+					for(int j=0; j<segment_pixels.at(i).size(); j++) {
+	                			mask.at<uchar>(segment_pixels.at(i).at(j)) = 255;
+            				}
+ 				}
+    			}
 		}
-	//for (int j = 0 ; j<3; j++){
-	//	difference = kmeans_clusters_frame[i][j] - kmeans_clusters_background[i][j];
-	//	cout << " this is the difference: " << difference << "\n";
-	//}
 
-    /*    while(count < numMin && index < N) {
-            //Calculate euclidean distance between averages
-            euc_dist = (int)round(norm(avgs.at(i), bgavgs.at(i).at(index)));
-
-            //Jensen-Bregman LogDet Divergence [Cherian et al, 2011] [Eq (7)] https://lear.inrialpes.fr/people/cherian/papers/metricICCV.pdf
-            //Use Cholesky factorisation to reduce computation
-            //https://stackoverflow.com/questions/30223101/jensen-bregman-logdet-divergence/30236092#30236092
-            Mat A, B, C;
-            double detA, detB, detC;
-            Cholesky(covars.at(i), A);
-            Cholesky(bgcovars.at(i).at(index), B);
-            Cholesky((covars.at(i) + bgcovars.at(i).at(index))*0.5, C);
-            detA = determinant(A);
-            detB = determinant(B);
-            detC = determinant(C);
-            dissimilarity = abs(2*log(isfinite(detC)&&detC!=0?detC:EPSILON) - log(isfinite(detA)&&detA!=0?detA:EPSILON) - log(isfinite(detB)&&detB!=0?detB:EPSILON));
-            //dissimilarity = log( determinant((covars.at(i)+bgcovars.at(i).at(index)) * 0.5) - 0.5*log(determinant(covars.at(i)*bgcovars.at(i).at(index))) );
-
-            //Check if enough similar samples have been found (if so, break)
-            //If the colour covariance and the mean colours are similar enough, it counts towards the background
-            if(euc_dist < R && dissimilarity < DIS) {
-            //if(euc_dist < R) {
-                count++;
-            }
-            index++;
-        }*/
-
-        //2) Classify superpixel and update model
-       /* if(count >= numMin) {
-            //3) Update current pixel model
-            randint = rand() % (N-1);
-            avgs.at(i).copyTo(bgavgs.at(i).at(randint));
-            covars.at(i).copyTo(bgcovars.at(i).at(randint));
-
-          /*  //4) Update neighbouring superpixel model(s)
-            randint = rand() % (phi-1);
-            if (randint == 0) {
-                if (neighbours.at(i).size() > 1) { //Can't rand % 0
-                    rand_neigh = neighbours.at(i).at(rand() % (neighbours.at(i).size()-1));
-                    rand_bgmodel = rand() % (N-1);
-                    avgs.at(i).copyTo(bgavgs.at(rand_neigh).at(rand_bgmodel));
-                    covars.at(i).copyTo(bgcovars.at(rand_neigh).at(rand_bgmodel));
-                }
-            }
-        } else {
-            for(int j=0; j<segment_pixels.at(i).size(); j++) {
-                mask.at<uchar>(segment_pixels.at(i).at(j)) = 255;
-            }*/
-        }
+       
     
-
+    }
     Mat masked_img(height, width, CV_8UC3, Scalar(0,0,0)); //Initialise to zeros
     Mat closed, opened;
     if (post == 1) {

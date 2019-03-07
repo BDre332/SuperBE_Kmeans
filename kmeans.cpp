@@ -20,25 +20,7 @@ int numTimes;
 
 // return ID of nearest center (uses euclidean distance)
 
-//Custom Class 3DoubleVect
-/*double DoubleVect::getCluster1(){
-	return cluster1;
-}
-double DoubleVect::getCluster2(){
-	return cluster2;
-}
-double DoubleVect::getCluster3(){
-	return cluster3;
-}
-void DoubleVect::setCluster1(double clusterValue){
-	cluster1 = clusterValue;
-}
-void DoubleVect::setCluster1(double clusterValue){
-	cluster2 = clusterValue;
-}
-void DoubleVect::setCluster1(double clusterValue){
-	cluster3 = clusterValue;
-}*/
+
 
 void Cluster_K::addPoint(Point_K point)
 	{
@@ -162,6 +144,8 @@ int KMeans::getIDNearestCenter(Point_K point)
 
 vector<double> KMeans::K_means_run(vector<Vec3b> SuperPixelValues){
 
+	
+//cout << "Entering K Means Run Function \n";
 // note TODO make sure that this goes into the run method. 
 	vector<Vec3b> SuperPixelValues1 ;
 	SuperPixelValues1 = SuperPixelValues;
@@ -175,18 +159,23 @@ vector<double> KMeans::K_means_run(vector<Vec3b> SuperPixelValues){
 	vector<Point_K> points;
 	string point_name;
 	vector<double> cluster_vals;	
+	cluster_vals.clear();
 	cluster_vals.resize(total_values);
 	numTimes++;
+	if (numTimes == 1){
+		cout << "Kmeans Clustering Running...";
+	}
 
 
 	//run through each superpixel set of pixels 
 	for(int i=0; i<total_points; i++) {
+		//cout << "run through each superpixel \n";
         	vector<double> values;
 		values.resize(3);
         	Vec3b vals = SuperPixelValues1[i];
 		//cout << "-------  Pixel Numnber:  " << i << "-------\n";
 		for( int j = 0; j < total_values; j++){
-			// run through each RGB value and append onto the vector values	
+			//cout << "run through each RGB value and append onto the vector values\n";	
 
 			
 			//cout << "Pixel" << j << ": "  << static_cast<double>(vals.val[j]) << "\n";
@@ -239,9 +228,10 @@ vector<double> KMeans::K_means_run(vector<Vec3b> SuperPixelValues){
 
 		vector<int> prohibited_indexes;
 
-		// choose K distinct values for the centers of the clusters
+		// cout << "choose K distinct values for the centers of the clusters\n"
 		for(int i = 0; i < K; i++)
 		{
+			//cout << "choose K distinct values for the centers of the clusters\n";
 			while(true)
 			{
 				int index_point = rand() % total_points;
@@ -262,14 +252,16 @@ vector<double> KMeans::K_means_run(vector<Vec3b> SuperPixelValues){
 
 		while(true)
 		{
+		//cout << "choose K distinct values for the centers of the clusters\n";
 			bool done = true;
 
 			// associates each point to the nearest center
 			for(int i = 0; i < total_points; i++)
-			{
+			{//cout << "associates each point to the nearest center\n";
 				int id_old_cluster = points[i].getCluster();
+			
 				int id_nearest_center = getIDNearestCenter(points[i]);
-
+			
 				if(id_old_cluster != id_nearest_center)
 				{
 					if(id_old_cluster != -1)
@@ -283,7 +275,7 @@ vector<double> KMeans::K_means_run(vector<Vec3b> SuperPixelValues){
 
 			// recalculating the center of each cluster
 			for(int i = 0; i < K; i++)
-			{
+			{//cout << "recalculate the center\n";
 				for(int j = 0; j < total_values; j++)
 				{
 					int total_points_cluster = clusters[i].getTotalPoints();
@@ -308,7 +300,7 @@ vector<double> KMeans::K_means_run(vector<Vec3b> SuperPixelValues){
 		}
 
 		
-		cout << "Cluster values for point: " << numTimes << "\n";
+		//cout << "Cluster values for point: " << numTimes << "\n";
 		// shows elements of clusters
 		//cluster_vals.resize(total_points);
 		
@@ -344,13 +336,15 @@ vector<double> KMeans::K_means_run(vector<Vec3b> SuperPixelValues){
        	
 		for (int y =0; y < total_values; y++){
 	           	cluster_vals[y]= (clusters[0].getCentralValue(y)); // Set up the Cluster Values for sending to the SuperBE Algorithm
-			cout << "Cluster  "<< y <<": " << cluster_vals[y] << " -----------\n";
+			//cout << "Cluster  "<< y <<": " << cluster_vals[y] << " -----------\n";
 	           }	
-		cout << "\n\n";
+		//cout << "\n\n";
 		
 		return cluster_vals;
 		
-
+		if (numTimes == total_values){
+			numTimes = 0;
+		}
 	}
 
 
